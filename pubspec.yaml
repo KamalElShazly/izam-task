@@ -1,0 +1,28 @@
+name: izam_mobile_team_task_may_25
+description: A new Flutter project.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  faker: ^2.2.0
+  csv: ^6.0.0
+  path: ^1.8.0
+  sqflite: ^2.4.1
+
+dev_dependencies:
+  sqflite_common_ffi: ^2.3.0
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/inventory_35000_records.csv
