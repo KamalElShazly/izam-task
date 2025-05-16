@@ -3,12 +3,13 @@ import 'dart:math';
 
 import 'package:izam_mobile_team_task_may_25/inventory_event.dart';
 import 'package:izam_mobile_team_task_may_25/inventory_state.dart';
-import 'package:izam_mobile_team_task_may_25/invertory_repository.dart';
+import 'package:izam_mobile_team_task_may_25/inventory_repository.dart';
 import 'package:izam_mobile_team_task_may_25/item.dart';
 
 class InventoryBloc {
   final _eventController = StreamController<InventoryEvent>();
   final _stateController = StreamController<InventoryState>.broadcast();
+  late StreamSubscription<InventoryState> _subscription;
 
   final InventoryRepository repository;
 
@@ -16,7 +17,7 @@ class InventoryBloc {
   Sink<InventoryEvent> get sink => _eventController.sink;
 
   InventoryBloc(this.repository) {
-    _eventController.stream
+    _subscription = _eventController.stream
         .where((event) => event is AddInventoryItem)
         .map((event) => (event as AddInventoryItem).item)
         .transform(_debounce(const Duration(milliseconds: 500)))
@@ -36,25 +37,44 @@ class InventoryBloc {
   StreamTransformer<Item, Item> _debounce(Duration duration) {
     return StreamTransformer<Item, Item>.fromBind((input) {
       late StreamController<Item> controller;
-      Timer? timer;
+      final timers = <int, Timer>{};
+      final latestItems = <int, Item>{};
+      late StreamSubscription<Item> subscription;
 
       controller = StreamController<Item>(
         onListen: () {
-          input.listen(
+          subscription = input.listen(
             (item) {
-              timer?.cancel();
-              timer = Timer(duration, () => controller.add(item));
+              final key = item.id;
+              latestItems[key] = item;
+
+              timers[key]?.cancel();
+              timers[key] = Timer(duration, () {
+                final item = latestItems.remove(key);
+                if (item != null) {
+                  controller.add(item);
+                }
+                timers.remove(key);
+              });
             },
             onError: controller.addError,
             onDone: () {
-              timer?.cancel();
+              for (Timer timer in timers.values) {
+                timer.cancel();
+              }
+              timers.clear();
               controller.close();
             },
             cancelOnError: false,
           );
         },
         onCancel: () {
-          timer?.cancel();
+          subscription.cancel();
+          for (Timer timer in timers.values) {
+            timer.cancel();
+          }
+          timers.clear();
+          controller.close();
         },
       );
 
@@ -77,6 +97,7 @@ class InventoryBloc {
       late StreamController<List<Item>> controller;
       List<Item> buffer = [];
       Timer? timer;
+      late StreamSubscription<Item> subscription;
 
       void forwardData() {
         if (buffer.isNotEmpty) {
@@ -90,7 +111,7 @@ class InventoryBloc {
 
       controller = StreamController<List<Item>>(
         onListen: () {
-          input.listen(
+          subscription = input.listen(
             (item) {
               buffer.add(item);
 
@@ -113,6 +134,7 @@ class InventoryBloc {
           );
         },
         onCancel: () {
+          subscription.cancel();
           timer?.cancel();
         },
       );
@@ -157,6 +179,7 @@ class InventoryBloc {
   }
 
   void dispose() {
+    _subscription.cancel();
     _eventController.close();
     _stateController.close();
   }

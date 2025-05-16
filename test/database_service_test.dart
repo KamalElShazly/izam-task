@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izam_mobile_team_task_may_25/csv_loader.dart';
 import 'package:izam_mobile_team_task_may_25/database_service.dart';
-import 'package:izam_mobile_team_task_may_25/invertory_repository.dart';
+import 'package:izam_mobile_team_task_may_25/inventory_repository.dart';
 import 'package:izam_mobile_team_task_may_25/item.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 

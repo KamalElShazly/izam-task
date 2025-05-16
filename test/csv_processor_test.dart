@@ -6,7 +6,7 @@ import 'package:izam_mobile_team_task_may_25/csv_handler.dart';
 import 'package:izam_mobile_team_task_may_25/database_service.dart';
 import 'package:izam_mobile_team_task_may_25/inventory_bloc.dart';
 import 'package:izam_mobile_team_task_may_25/inventory_event.dart';
-import 'package:izam_mobile_team_task_may_25/invertory_repository.dart';
+import 'package:izam_mobile_team_task_may_25/inventory_repository.dart';
 import 'package:izam_mobile_team_task_may_25/log_helper.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -38,6 +38,7 @@ void main() {
     final receivePort = ReceivePort();
 
     final Completer<void> completer = Completer<void>();
+    int succeeded = 0;
 
     // Start isolate
     await Isolate.spawn(
@@ -57,6 +58,7 @@ void main() {
           case CSVProcessorUpdateUIMessage():
             print('Processed ${message.numberOfLines} lines.');
           case CSVProcessorSummaryMessage():
+            succeeded = message.succeeded;
             print(
                 'Proccessed: ${message.processed}, Succeeded: ${message.succeeded}, Failed: ${message.failed}, Duration: ${message.duration} ms');
             for (CSVRowError error in message.errors) {
@@ -77,5 +79,15 @@ void main() {
     });
 
     await completer.future;
+
+    // wait for debounce
+    await Future.delayed(const Duration(milliseconds: 500));
+    // wait for batching
+    await Future.delayed(const Duration(seconds: 2));
+    // wait to make sure events are emitted
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    final count = await repository.getTableCount();
+    expect(count, succeeded);
   });
 }

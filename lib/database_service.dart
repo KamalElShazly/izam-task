@@ -118,4 +118,8 @@ class InventoryDatabase {
       _database = null;
     }
   }
+
+  int? firstIntValue(List<Map<String, Object?>> list) {
+    return Sqflite.firstIntValue(list);
+  }
 }

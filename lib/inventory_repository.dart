@@ -74,4 +74,11 @@ class InventoryRepository {
 
     return results.map((json) => Item.fromMap(json)).toList();
   }
+
+  Future<int> getTableCount() async {
+    final db = await _database.database;
+
+    final result = await db.rawQuery('SELECT COUNT(*) FROM inventory');
+    return _database.firstIntValue(result) ?? 0;
+  }
 }
