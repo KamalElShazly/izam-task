@@ -24,9 +24,13 @@ void main() {
   });
 
   test('Read csv file and insert into database', () async {
+    // await parseCsvLineByLine('assets/inventory_35000_records.csv');
     final csvItemsMap = await loadCsvData('assets/inventory_35000_records.csv');
 
-    await repository.bulkUpdate(List<Item>.generate(csvItemsMap.length, (index) => Item.fromMap(csvItemsMap[index], index: index),));
+    await repository.bulkUpdate(List<Item>.generate(
+      csvItemsMap.length,
+      (index) => Item.fromMap(csvItemsMap[index], index: index),
+    ));
     final results = await repository.getPaginatedProducts(pageSize: 35000);
 
     expect(results.length, 35000); // it should fail because some quantities are not valid, and the test won't reach this line.
@@ -74,16 +78,8 @@ void main() {
 
   test('Full-text search by category', () async {
     await repository.bulkUpdate([
-      Item(id: 50000,
-          name: 'Phone',
-          category: 'electronics',
-          qty: 2,
-          lastUpdated: DateTime.now()),
-      Item(id: 50001,
-          name: 'Chair',
-          category: 'furniture',
-          qty: 2,
-          lastUpdated: DateTime.now()),
+      Item(id: 50000, name: 'Phone', category: 'electronics', qty: 2, lastUpdated: DateTime.now()),
+      Item(id: 50001, name: 'Chair', category: 'furniture', qty: 2, lastUpdated: DateTime.now()),
     ]);
 
     final results = await repository.searchInventory('category:electronics');

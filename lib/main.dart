@@ -6,20 +6,15 @@ import 'package:path/path.dart' as path;
 
 void main() async {
   const recordCount = 35000; // Set between 25k-50k
-  const errorRate = 0.00; // 0% invalid records
+  const errorRate = 0.01; // 0% invalid records
 
   final faker = Faker();
   final random = Random();
   final date = DateTime.now();
 
-  List<List<dynamic>> csvData = [[
-    'id',
-    'name',
-    'qty',
-    'price',
-    'category',
-    'last_updated'
-  ]];
+  List<List<dynamic>> csvData = [
+    ['id', 'name', 'qty', 'price', 'category', 'last_updated']
+  ];
 
   for (int i = 1; i <= recordCount; i++) {
     // Introduce errors
@@ -41,16 +36,12 @@ void main() async {
 
   await File(filePath).writeAsString(csv);
   print('Generated $filePath with ${recordCount} records');
-
-
 }
 
 String _generateItemName(Faker faker, bool injectError) {
   if (injectError && Random().nextBool()) {
     // Generate problematic names
-    return Random().nextBool()
-        ? 'Item,With,Commas'
-        : 'L"quoted"Item';
+    return Random().nextBool() ? 'Item,With,Commas' : 'L"quoted"Item';
   }
   return '${faker.food.dish()} v${Random().nextInt(100)}';
 }

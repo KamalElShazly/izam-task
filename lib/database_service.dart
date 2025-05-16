@@ -1,4 +1,6 @@
 // database_service.dart
+import 'dart:async';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -15,11 +17,20 @@ class InventoryDatabase {
   Database? _database;
   Database? get databaseRef => _database;
   final bool _inMemory;
+  final Completer<Database> _completer = Completer<Database>();
 
-  InventoryDatabase._init({bool inMemory = false}) : _inMemory = inMemory;
+  InventoryDatabase._init({bool inMemory = false}) : _inMemory = inMemory {
+    _initialize();
+  }
 
   Future<Database> get database async {
-    return _database ??= await _initDatabase();
+    return _completer.future;
+    // return _database ??= await _initDatabase();
+  }
+
+  Future<void> _initialize() async {
+    _database = await _initDatabase();
+    _completer.complete(_database);
   }
 
   Future<Database> _initDatabase() async {
@@ -99,7 +110,6 @@ class InventoryDatabase {
         tokenize='porter unicode61'
       )
     ''');
-
   }
 
   Future<void> close() async {
